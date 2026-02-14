@@ -7,6 +7,7 @@ import FailureTimeline from "@/components/panels/FailureTimeline";
 import SecurityRisk from "@/components/panels/SecurityRisk";
 import SafeRunPlan from "@/components/panels/SafeRunPlan";
 import RecoveryStrategy from "@/components/panels/RecoveryStrategy";
+import ClaudeToolkit from "@/components/panels/ClaudeToolkit";
 
 interface Props {
   results: AnalysisResults;
@@ -19,7 +20,7 @@ export default function AnalysisDashboard({ results, currentPass }: Props) {
   };
 
   return (
-    <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
       {/* Row 1 */}
       <SystemOverview
         data={results.system_overview}
@@ -34,23 +35,25 @@ export default function AnalysisDashboard({ results, currentPass }: Props) {
         isLoading={isPassLoading(3)}
       />
 
-      {/* Row 2: Failure Timeline spans 2 cols */}
-      <div className="lg:col-span-2">
-        <FailureTimeline
-          data={results.failure_timeline}
-          isLoading={isPassLoading(2)}
-        />
-      </div>
+      {/* Row 2 */}
+      <FailureTimeline
+        data={results.failure_timeline}
+        isLoading={isPassLoading(2)}
+      />
       <SafeRunPlan
         data={results.safe_run_plan}
         isLoading={isPassLoading(4)}
       />
+      <RecoveryStrategy
+        data={results.recovery_strategy}
+        isLoading={isPassLoading(5)}
+      />
 
-      {/* Row 3 */}
-      <div className="lg:col-span-3">
-        <RecoveryStrategy
-          data={results.recovery_strategy}
-          isLoading={isPassLoading(5)}
+      {/* Row 3: Full-width capstone */}
+      <div className="lg:col-span-3 md:col-span-2">
+        <ClaudeToolkit
+          data={results.claude_toolkit}
+          isLoading={isPassLoading(6)}
         />
       </div>
     </div>

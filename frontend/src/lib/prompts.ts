@@ -266,6 +266,53 @@ Respond with ONLY valid JSON matching this exact structure:
   ]
 }`,
   },
+  {
+    name: "claude_toolkit",
+    title: "Your Claude Toolkit",
+    prompt: `You are a prompting expert who helps developers get the most out of Claude AI when working with open source projects.
+
+Analyze this repository and generate 5-6 tailored, ready-to-use prompts that a developer could paste directly into Claude to get real help with this specific project. Each prompt should use a different modern prompting technique and solve a genuine problem someone would face with this repo.
+
+Repository: {repo_name}
+Description: {description}
+
+README:
+{readme}
+
+File Tree (partial):
+{file_tree}
+
+Languages: {languages}
+
+Config/Package Files:
+{config_files}
+
+Generate prompts using these techniques (pick 5-6 that best fit the repo):
+
+1. **Extended Thinking / Chain of Thought** — Best for debugging complex issues. Ask Claude to reason step-by-step through a problem specific to this repo's architecture.
+2. **Role + Expertise Prompting** — Cast Claude as an expert in this repo's specific tech stack (e.g., "You are a senior Rails engineer who specializes in Action Cable...").
+3. **Structured Output** — For generating configs, migrations, schemas, or boilerplate specific to this project's patterns.
+4. **Multi-Step Planning** — For breaking down a contribution, feature addition, or migration into a clear plan with this repo's conventions.
+5. **Contextual Grounding** — Provide repo structure/conventions as context so Claude generates code that fits the project's style.
+6. **Contrarian / Red Team** — For finding edge cases, potential issues, or challenging assumptions in this project's approach.
+
+CRITICAL: Every prompt must be specific to THIS repository — reference actual file paths, technologies, patterns, and conventions from the repo. Never generate generic prompts.
+
+Respond with ONLY valid JSON matching this exact structure:
+{
+  "reasoning_steps": ["step 1...", "step 2...", "step 3..."],
+  "intro": "A short paragraph (2-3 sentences) explaining that these are ready-to-use prompts tailored to this specific project, and that each uses a proven prompting technique to get better results from Claude.",
+  "prompts": [
+    {
+      "title": "Short descriptive title for what this prompt helps with",
+      "use_case": "One sentence describing when you'd use this prompt",
+      "technique": "Chain of Thought|Role Prompting|Structured Output|Multi-Step Planning|Contextual Grounding|Red Team",
+      "technique_explanation": "One sentence explaining why this technique works well for this particular use case",
+      "prompt_text": "The full, ready-to-paste prompt text. This should be 3-8 sentences long, specific to the repo, and use the named technique effectively."
+    }
+  ]
+}`,
+  },
 ];
 
 export function getPassPrompt(

@@ -90,6 +90,19 @@ export interface SafeRunPlanData {
   estimated_time: string;
 }
 
+// Pass 7: Claude Toolkit
+export interface ClaudeToolkitData {
+  reasoning_steps: string[];
+  intro: string;
+  prompts: {
+    title: string;
+    use_case: string;
+    technique: string;
+    technique_explanation: string;
+    prompt_text: string;
+  }[];
+}
+
 // Pass 6: Recovery Strategy
 export interface RecoveryStrategyData {
   reasoning_steps: string[];
@@ -120,6 +133,7 @@ export interface AnalysisResults {
   security_risk?: SecurityRiskData;
   safe_run_plan?: SafeRunPlanData;
   recovery_strategy?: RecoveryStrategyData;
+  claude_toolkit?: ClaudeToolkitData;
 }
 
 export type AnalysisStatus = "idle" | "analyzing" | "complete" | "error";
@@ -141,6 +155,7 @@ export const PASS_NAMES: Record<string, string> = {
   security_risk: "Safety Check",
   safe_run_plan: "Let's Run It",
   recovery_strategy: "If Things Break",
+  claude_toolkit: "Your Claude Toolkit",
 };
 
 export const PASS_ORDER = [
@@ -150,6 +165,7 @@ export const PASS_ORDER = [
   "security_risk",
   "safe_run_plan",
   "recovery_strategy",
+  "claude_toolkit",
 ];
 
 // Discovery types

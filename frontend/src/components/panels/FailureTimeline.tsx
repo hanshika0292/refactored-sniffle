@@ -12,25 +12,31 @@ interface Props {
 
 const statusColors: Record<
   string,
-  { bg: string; border: string; dot: string; text: string }
+  { dot: string; line: string; bg: string; text: string; badge: string }
 > = {
   ok: {
-    bg: "bg-green-50 dark:bg-green-900/20",
-    border: "border-green-300 dark:border-green-700",
     dot: "bg-green-500 dark:bg-green-400",
-    text: "text-green-600 dark:text-green-400",
+    line: "bg-green-200 dark:bg-green-800",
+    bg: "bg-green-50 dark:bg-green-950/30",
+    text: "text-green-700 dark:text-green-400",
+    badge:
+      "bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 border-green-200 dark:border-green-800",
   },
   warning: {
-    bg: "bg-amber-50 dark:bg-amber-900/20",
-    border: "border-amber-300 dark:border-amber-700",
     dot: "bg-amber-500 dark:bg-amber-400",
-    text: "text-amber-600 dark:text-amber-400",
+    line: "bg-amber-200 dark:bg-amber-800",
+    bg: "bg-amber-50 dark:bg-amber-950/30",
+    text: "text-amber-700 dark:text-amber-400",
+    badge:
+      "bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 border-amber-200 dark:border-amber-800",
   },
   critical: {
-    bg: "bg-red-50 dark:bg-red-900/20",
-    border: "border-red-300 dark:border-red-700",
     dot: "bg-red-500 dark:bg-red-400",
-    text: "text-red-600 dark:text-red-400",
+    line: "bg-red-200 dark:bg-red-800",
+    bg: "bg-red-50 dark:bg-red-950/30",
+    text: "text-red-700 dark:text-red-400",
+    badge:
+      "bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 border-red-200 dark:border-red-800",
   },
 };
 
@@ -41,76 +47,74 @@ export default function FailureTimeline({ data, isLoading }: Props) {
       icon={<Clock className="w-4 h-4" />}
       isLoading={isLoading}
       isEmpty={!data}
-      className=""
     >
       {data && (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Header stats */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400 dark:text-gray-500">
                 Survival Rate
               </span>
-              <span className="text-lg font-bold text-cyan-600 dark:text-cyan-400">
+              <span className="text-base font-bold text-cyan-600 dark:text-cyan-400">
                 {data.overall_survival_rate}
               </span>
             </div>
-            <div className="text-xs text-gray-400 dark:text-gray-500 max-w-xs text-right">
+            <p className="text-[11px] text-gray-400 dark:text-gray-500 text-right leading-tight max-w-[200px]">
               {data.critical_period}
-            </div>
+            </p>
           </div>
 
-          {/* Horizontal timeline */}
-          <div className="relative">
-            {/* Timeline line */}
-            <div className="absolute top-4 left-4 right-4 h-0.5 bg-gray-200 dark:bg-gray-800" />
-            <div className="flex justify-between relative">
-              {data.timeline?.map((node, i) => {
+          {/* Vertical timeline */}
+          <div className="relative pl-5">
+            {/* Connecting line */}
+            <div className="absolute left-[7px] top-1 bottom-1 w-0.5 bg-gray-200 dark:bg-gray-800 rounded-full" />
+
+            <div className="space-y-3">
+              {data.timeline?.slice(0, 6).map((node, i) => {
                 const colors = statusColors[node.status] || statusColors.ok;
                 return (
                   <motion.div
                     key={i}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.15, duration: 0.4 }}
-                    className="flex flex-col items-center flex-1 group"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: i * 0.1, duration: 0.3 }}
+                    className="relative"
                   >
-                    {/* Node dot */}
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: i * 0.15 + 0.2, type: "spring" }}
-                      className={`w-8 h-8 rounded-full ${colors.bg} border-2 ${colors.border} flex items-center justify-center z-10`}
-                    >
-                      <div
-                        className={`w-2.5 h-2.5 rounded-full ${colors.dot}`}
-                      />
-                    </motion.div>
-
-                    {/* Time label */}
+                    {/* Dot */}
                     <div
-                      className={`text-[10px] font-medium mt-1.5 ${colors.text}`}
-                    >
-                      {node.time_label}
-                    </div>
+                      className={`absolute -left-5 top-1.5 w-2.5 h-2.5 rounded-full ${colors.dot} ring-2 ring-white dark:ring-gray-900 z-10`}
+                    />
 
-                    {/* Event card */}
-                    <div
-                      className={`mt-2 w-full px-2 py-2 ${colors.bg} border ${colors.border} rounded-lg`}
-                    >
-                      <div className="text-xs font-medium text-gray-800 dark:text-gray-200 text-center">
-                        {node.title}
+                    {/* Content */}
+                    <div className={`rounded-lg p-2.5 ${colors.bg}`}>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span
+                              className={`text-[10px] font-semibold uppercase tracking-wide ${colors.text}`}
+                            >
+                              {node.time_label}
+                            </span>
+                            <span
+                              className={`text-[9px] px-1.5 py-0.5 rounded-full border ${colors.badge}`}
+                            >
+                              {node.probability}
+                            </span>
+                          </div>
+                          <div className="text-xs font-medium text-gray-800 dark:text-gray-200">
+                            {node.title}
+                          </div>
+                        </div>
                       </div>
-                      <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-center leading-tight">
+                      <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 leading-relaxed line-clamp-2">
                         {node.description}
                       </p>
-                      <div className="flex justify-center mt-1.5">
-                        <span
-                          className={`text-[9px] px-1.5 py-0.5 rounded-full ${colors.bg} ${colors.text} border ${colors.border}`}
-                        >
-                          {node.probability}
-                        </span>
-                      </div>
+                      {node.mitigation && (
+                        <p className="text-[10px] text-cyan-600 dark:text-cyan-400/70 mt-1">
+                          Tip: {node.mitigation}
+                        </p>
+                      )}
                     </div>
                   </motion.div>
                 );
