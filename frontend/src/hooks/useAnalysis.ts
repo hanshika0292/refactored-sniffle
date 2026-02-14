@@ -12,6 +12,40 @@ const initialState: AnalysisState = {
   results: {},
 };
 
+// --- Cache helpers ---
+
+export function extractRepoKey(url: string): string {
+  const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+  if (!match) return "";
+  return match[1].replace(/\.git$/, "").replace(/\/$/, "").toLowerCase();
+}
+
+function getCachedResult(repoKey: string): AnalysisResults | null {
+  if (!repoKey) return null;
+  try {
+    const raw = localStorage.getItem(`glassbox:${repoKey}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    return parsed.results ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function cacheResult(repoKey: string, results: AnalysisResults): void {
+  if (!repoKey) return;
+  try {
+    localStorage.setItem(
+      `glassbox:${repoKey}`,
+      JSON.stringify({ results, timestamp: Date.now() })
+    );
+  } catch {
+    // localStorage full or unavailable — silently skip
+  }
+}
+
+// --- SSE processing ---
+
 function processEvent(
   event: Record<string, unknown>,
   setState: React.Dispatch<React.SetStateAction<AnalysisState>>
@@ -90,12 +124,32 @@ function parseSSELines(
 export function useAnalysis() {
   const [state, setState] = useState<AnalysisState>(initialState);
   const abortRef = useRef<AbortController | null>(null);
+  const currentUrlRef = useRef<string>("");
 
-  const analyze = useCallback(async (url: string) => {
+  const analyze = useCallback(async (url: string, forceRefresh: boolean = false) => {
     // Cancel any existing request
     if (abortRef.current) {
       abortRef.current.abort();
     }
+
+    currentUrlRef.current = url;
+    const repoKey = extractRepoKey(url);
+
+    // Check cache unless forcing refresh
+    if (!forceRefresh) {
+      const cached = getCachedResult(repoKey);
+      if (cached) {
+        setState({
+          ...initialState,
+          status: "complete",
+          currentPass: 7,
+          message: "Loaded from cache",
+          results: cached,
+        });
+        return;
+      }
+    }
+
     const controller = new AbortController();
     abortRef.current = controller;
 
@@ -141,6 +195,14 @@ export function useAnalysis() {
       if (buffer.trim()) {
         parseSSELines(buffer.split("\n"), setState);
       }
+
+      // Cache the completed results
+      setState((prev) => {
+        if (prev.status === "complete" && repoKey) {
+          cacheResult(repoKey, prev.results);
+        }
+        return prev;
+      });
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
 

@@ -1,47 +1,54 @@
 "use client";
 
 import { useState } from "react";
-import { useAnalysis } from "@/hooks/useAnalysis";
+import { useRouter } from "next/navigation";
 import { useDiscovery } from "@/hooks/useDiscovery";
 import InputBar from "@/components/InputBar";
-import ProgressTracker from "@/components/ProgressTracker";
-import AnalysisDashboard from "@/components/AnalysisDashboard";
 import ModeTabs from "@/components/ModeTabs";
 import DiscoveryInput from "@/components/DiscoveryInput";
 import DiscoveryProgress from "@/components/DiscoveryProgress";
 import DiscoveryResults from "@/components/DiscoveryResults";
 import ThemeToggle from "@/components/ThemeToggle";
-import { PASS_ORDER, AppMode, DiscoveryFilters } from "@/lib/types";
+import { AppMode, DiscoveryFilters } from "@/lib/types";
 import { motion, AnimatePresence } from "framer-motion";
 import { Box, RotateCcw } from "lucide-react";
 
+function extractRepoPath(url: string): string | null {
+  const match = url.match(/github\.com\/([^\/]+\/[^\/]+)/);
+  if (!match) return null;
+  return match[1].replace(/\.git$/, "").replace(/\/$/, "");
+}
+
 export default function Home() {
   const [mode, setMode] = useState<AppMode>("discover");
-  const { state, analyze, reset } = useAnalysis();
+  const [urlError, setUrlError] = useState<string | null>(null);
+  const router = useRouter();
   const {
     state: discoveryState,
     discover,
     reset: resetDiscovery,
   } = useDiscovery();
 
-  const completedPasses = PASS_ORDER.filter(
-    (name) => state.results[name as keyof typeof state.results] !== undefined
-  );
-
-  const isIdle = state.status === "idle";
-  const isAnalyzing = state.status === "analyzing";
-  const isComplete = state.status === "complete";
-  const isError = state.status === "error";
-  const hasResults = completedPasses.length > 0;
-
   const isDiscoveryIdle = discoveryState.status === "idle";
   const isSearching = discoveryState.status === "searching";
   const isDiscoveryComplete = discoveryState.status === "complete";
   const isDiscoveryError = discoveryState.status === "error";
 
+  const handleAnalyzeSubmit = (url: string) => {
+    setUrlError(null);
+    const repoPath = extractRepoPath(url);
+    if (repoPath) {
+      router.push(`/analyze/${repoPath}`);
+    } else {
+      setUrlError("Please enter a valid GitHub repository URL (e.g., https://github.com/owner/repo)");
+    }
+  };
+
   const handleAnalyzeFromDiscovery = (url: string) => {
-    setMode("analyze");
-    analyze(url);
+    const repoPath = extractRepoPath(url);
+    if (repoPath) {
+      router.push(`/analyze/${repoPath}`);
+    }
   };
 
   const handleDiscover = (query: string, filters: DiscoveryFilters) => {
@@ -49,16 +56,10 @@ export default function Home() {
   };
 
   const handleReset = () => {
-    if (mode === "analyze") {
-      reset();
-    } else {
-      resetDiscovery();
-    }
+    resetDiscovery();
   };
 
-  const showReset =
-    (mode === "analyze" && !isIdle) ||
-    (mode === "discover" && !isDiscoveryIdle);
+  const showReset = mode === "discover" && !isDiscoveryIdle;
 
   return (
     <main className="min-h-screen flex flex-col">
@@ -83,7 +84,7 @@ export default function Home() {
                 className="flex items-center gap-1.5 text-xs text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
               >
                 <RotateCcw className="w-3 h-3" />
-                {mode === "analyze" ? "Start Over" : "New Search"}
+                New Search
               </button>
             )}
           </div>
@@ -94,7 +95,7 @@ export default function Home() {
       <div className="flex-1 px-6 py-8">
         <AnimatePresence mode="wait">
           {/* ===== ANALYZE MODE ===== */}
-          {mode === "analyze" && isIdle && (
+          {mode === "analyze" && (
             <motion.div
               key="analyze-hero"
               initial={{ opacity: 0, y: 20 }}
@@ -114,56 +115,15 @@ export default function Home() {
                 how to set it up, and what to watch out for — no jargon, just
                 clarity.
               </p>
-              <InputBar onSubmit={analyze} isLoading={false} />
-            </motion.div>
-          )}
-
-          {mode === "analyze" && (isAnalyzing || isComplete || isError) && (
-            <motion.div
-              key="analyze-results"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="space-y-6"
-            >
-              <div className="max-w-2xl mx-auto">
-                <InputBar onSubmit={analyze} isLoading={isAnalyzing} />
-              </div>
-
-              {isError && (
-                <div className="max-w-2xl mx-auto text-center">
-                  <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-lg p-4">
-                    <p className="text-red-600 dark:text-red-400 text-sm">
-                      {state.error}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {isAnalyzing && (
-                <ProgressTracker
-                  currentPass={state.currentPass}
-                  completedPasses={completedPasses}
-                  reasoning={state.reasoning}
-                  message={state.message}
-                />
-              )}
-
-              {isComplete && (
-                <motion.div
-                  initial={{ opacity: 0, y: -10 }}
+              <InputBar onSubmit={handleAnalyzeSubmit} isLoading={false} />
+              {urlError && (
+                <motion.p
+                  initial={{ opacity: 0, y: -5 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="text-center text-sm text-cyan-600 dark:text-cyan-400"
+                  className="mt-3 text-sm text-red-500 dark:text-red-400"
                 >
-                  All done! Here's everything we found.
-                </motion.div>
-              )}
-
-              {hasResults && (
-                <AnalysisDashboard
-                  results={state.results}
-                  currentPass={state.currentPass}
-                />
+                  {urlError}
+                </motion.p>
               )}
             </motion.div>
           )}

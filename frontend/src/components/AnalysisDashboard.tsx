@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect } from "react";
 import { AnalysisResults, PASS_ORDER } from "@/lib/types";
 import SystemOverview from "@/components/panels/SystemOverview";
 import SetupRiskRadar from "@/components/panels/SetupRiskRadar";
@@ -15,9 +16,17 @@ interface Props {
 }
 
 export default function AnalysisDashboard({ results, currentPass }: Props) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+
   const isPassLoading = (passIndex: number) => {
     return currentPass === passIndex + 1 && !results[PASS_ORDER[passIndex] as keyof AnalysisResults];
   };
+
+  useEffect(() => {
+    if (currentPass > 0) {
+      scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [currentPass]);
 
   return (
     <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
@@ -56,6 +65,9 @@ export default function AnalysisDashboard({ results, currentPass }: Props) {
           isLoading={isPassLoading(6)}
         />
       </div>
+
+      {/* Scroll anchor */}
+      <div ref={scrollRef} className="col-span-full" />
     </div>
   );
 }
