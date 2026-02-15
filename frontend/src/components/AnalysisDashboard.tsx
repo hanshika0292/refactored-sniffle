@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useEffect } from "react";
-import { AnalysisResults, PASS_ORDER } from "@/lib/types";
+import { AnalysisResults, AnalysisStatus, PASS_ORDER } from "@/lib/types";
 import SystemOverview from "@/components/panels/SystemOverview";
 import SetupRiskRadar from "@/components/panels/SetupRiskRadar";
 import FailureTimeline from "@/components/panels/FailureTimeline";
@@ -13,61 +13,75 @@ import ClaudeToolkit from "@/components/panels/ClaudeToolkit";
 interface Props {
   results: AnalysisResults;
   currentPass: number;
+  status?: AnalysisStatus;
 }
 
-export default function AnalysisDashboard({ results, currentPass }: Props) {
+export default function AnalysisDashboard({ results, currentPass, status }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const completedCountRef = useRef(0);
 
-  const isPassLoading = (passIndex: number) => {
-    return currentPass === passIndex + 1 && !results[PASS_ORDER[passIndex] as keyof AnalysisResults];
+  // For parallel: a panel is loading if we're analyzing and its data hasn't arrived
+  const isPassLoading = (passName: string) => {
+    if (status === "analyzing") {
+      return !results[passName as keyof AnalysisResults];
+    }
+    return false;
   };
 
+  // Auto-scroll when new results arrive
+  const completedCount = PASS_ORDER.filter(
+    (name) => results[name as keyof AnalysisResults] !== undefined
+  ).length;
+
   useEffect(() => {
-    if (currentPass > 0) {
+    if (completedCount > completedCountRef.current) {
+      completedCountRef.current = completedCount;
       scrollRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
-  }, [currentPass]);
+  }, [completedCount]);
 
   return (
-    <div className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
-      {/* Row 1 */}
-      <SystemOverview
-        data={results.system_overview}
-        isLoading={isPassLoading(0)}
-      />
-      <SetupRiskRadar
-        data={results.setup_risk_radar}
-        isLoading={isPassLoading(1)}
-      />
-      <SecurityRisk
-        data={results.security_risk}
-        isLoading={isPassLoading(3)}
+    <div className="w-full max-w-7xl mx-auto space-y-4">
+      {/* Row 1: High-impact — Let's Run It + overview panels */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+        <SafeRunPlan
+          data={results.safe_run_plan}
+          isLoading={isPassLoading("safe_run_plan")}
+        />
+        <SystemOverview
+          data={results.system_overview}
+          isLoading={isPassLoading("system_overview")}
+        />
+        <SetupRiskRadar
+          data={results.setup_risk_radar}
+          isLoading={isPassLoading("setup_risk_radar")}
+        />
+      </div>
+
+      {/* Row 2: Claude Toolkit — full width */}
+      <ClaudeToolkit
+        data={results.claude_toolkit}
+        isLoading={isPassLoading("claude_toolkit")}
       />
 
-      {/* Row 2 */}
-      <FailureTimeline
-        data={results.failure_timeline}
-        isLoading={isPassLoading(2)}
-      />
-      <SafeRunPlan
-        data={results.safe_run_plan}
-        isLoading={isPassLoading(4)}
-      />
-      <RecoveryStrategy
-        data={results.recovery_strategy}
-        isLoading={isPassLoading(5)}
-      />
-
-      {/* Row 3: Full-width capstone */}
-      <div className="lg:col-span-3 md:col-span-2">
-        <ClaudeToolkit
-          data={results.claude_toolkit}
-          isLoading={isPassLoading(6)}
+      {/* Row 3: Risk & recovery panels */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-start">
+        <SecurityRisk
+          data={results.security_risk}
+          isLoading={isPassLoading("security_risk")}
+        />
+        <FailureTimeline
+          data={results.failure_timeline}
+          isLoading={isPassLoading("failure_timeline")}
+        />
+        <RecoveryStrategy
+          data={results.recovery_strategy}
+          isLoading={isPassLoading("recovery_strategy")}
         />
       </div>
 
       {/* Scroll anchor */}
-      <div ref={scrollRef} className="col-span-full" />
+      <div ref={scrollRef} />
     </div>
   );
 }

@@ -2,21 +2,24 @@
 
 import { motion } from "framer-motion";
 import { Check, Loader2, Circle } from "lucide-react";
-import { PASS_ORDER, PASS_NAMES } from "@/lib/types";
+import { PASS_ORDER, PASS_NAMES, AnalysisStatus } from "@/lib/types";
 
 interface ProgressTrackerProps {
   currentPass: number;
   completedPasses: string[];
   reasoning: string[];
   message: string;
+  status?: AnalysisStatus;
 }
 
 export default function ProgressTracker({
-  currentPass,
   completedPasses,
   reasoning,
   message,
+  status,
 }: ProgressTrackerProps) {
+  const isAnalyzing = status === "analyzing";
+
   return (
     <div className="w-full max-w-4xl mx-auto mb-8">
       {/* Step indicators */}
@@ -37,10 +40,10 @@ export default function ProgressTracker({
           style={{ maxWidth: "calc(100% - 2rem)" }}
         />
 
-        {PASS_ORDER.map((passName, i) => {
-          const passNumber = i + 1;
+        {PASS_ORDER.map((passName) => {
           const isComplete = completedPasses.includes(passName);
-          const isActive = currentPass === passNumber && !isComplete;
+          // In parallel mode, all non-completed passes are active
+          const isActive = isAnalyzing && !isComplete;
 
           return (
             <div
@@ -86,7 +89,7 @@ export default function ProgressTracker({
 
       {/* Status message */}
       <div className="text-center text-sm text-gray-500 dark:text-gray-400 mb-3">
-        {message}
+        {message || `Running all passes in parallel (${completedPasses.length}/${PASS_ORDER.length} done)`}
       </div>
 
       {/* Reasoning chain */}
@@ -97,7 +100,7 @@ export default function ProgressTracker({
           className="bg-gray-50 dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg p-4 max-h-32 overflow-y-auto"
         >
           <div className="text-xs text-gray-400 dark:text-gray-500 mb-2 uppercase tracking-wider">
-            What we're thinking...
+            What we&apos;re thinking...
           </div>
           {reasoning.slice(-3).map((step, i) => (
             <motion.div

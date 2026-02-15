@@ -35,56 +35,44 @@ export default function SecurityRisk({ data, isLoading }: Props) {
       isEmpty={!data}
     >
       {data && (
-        <div className="space-y-4">
-          {/* Security rating */}
+        <div className="space-y-3">
+          {/* Rating + risk summary */}
           <div className="flex items-center justify-between">
             <span
-              className={`px-3 py-1 text-sm font-medium rounded-full border ${
+              className={`px-2.5 py-0.5 text-xs font-medium rounded-full border ${
                 ratingColors[data.security_rating] || ratingColors.medium
               }`}
             >
               {data.security_rating?.toUpperCase()}
             </span>
-            <div className="flex gap-3 text-xs">
+            <div className="flex gap-3 text-[10px]">
               <span className="text-gray-400 dark:text-gray-500">
-                Data:{" "}
-                <span className="text-gray-600 dark:text-gray-300">
-                  {data.data_exposure_risk}
-                </span>
+                Data: <span className="text-gray-600 dark:text-gray-300">{data.data_exposure_risk}</span>
               </span>
               <span className="text-gray-400 dark:text-gray-500">
-                Supply Chain:{" "}
-                <span className="text-gray-600 dark:text-gray-300">
-                  {data.supply_chain_risk}
-                </span>
+                Supply: <span className="text-gray-600 dark:text-gray-300">{data.supply_chain_risk}</span>
               </span>
             </div>
           </div>
 
-          {/* Findings */}
+          {/* Findings — compact: severity + title + one-line fix */}
           {data.findings && data.findings.length > 0 && (
-            <div className="space-y-2">
-              {data.findings.slice(0, 4).map((finding, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2.5"
-                >
+            <div className="space-y-1.5">
+              {data.findings.slice(0, 3).map((finding, i) => (
+                <div key={i} className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2">
                   <div className="flex items-center gap-2">
                     <span
-                      className={`text-xs font-medium uppercase ${
-                        severityColors[finding.severity] || "text-gray-500 dark:text-gray-400"
+                      className={`text-[10px] font-semibold uppercase ${
+                        severityColors[finding.severity] || "text-gray-500"
                       }`}
                     >
                       {finding.severity}
                     </span>
-                    <span className="text-sm text-gray-800 dark:text-gray-200">
+                    <span className="text-xs text-gray-800 dark:text-gray-200 truncate">
                       {finding.title}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    {finding.description}
-                  </p>
-                  <p className="text-xs text-cyan-600 dark:text-cyan-400/70 mt-1">
+                  <p className="text-[10px] text-cyan-600 dark:text-cyan-400/70 mt-0.5 line-clamp-1">
                     Fix: {finding.recommendation}
                   </p>
                 </div>
@@ -92,41 +80,29 @@ export default function SecurityRisk({ data, isLoading }: Props) {
             </div>
           )}
 
-          {/* Positive practices */}
-          {data.positive_practices && data.positive_practices.length > 0 && (
-            <div>
-              <div className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
-                What They're Doing Right
+          {/* Good + Bad — inline compact */}
+          <div className="flex gap-4">
+            {data.positive_practices && data.positive_practices.length > 0 && (
+              <div className="flex-1 min-w-0">
+                {data.positive_practices.slice(0, 2).map((p, i) => (
+                  <div key={i} className="text-[10px] text-green-600 dark:text-green-400/70 flex gap-1 mb-0.5 leading-snug">
+                    <span className="shrink-0">&#10003;</span>
+                    <span className="line-clamp-1">{p}</span>
+                  </div>
+                ))}
               </div>
-              {data.positive_practices.slice(0, 3).map((practice, i) => (
-                <div
-                  key={i}
-                  className="text-xs text-green-600 dark:text-green-400/70 flex gap-2 mb-1"
-                >
-                  <span className="shrink-0">&#10003;</span>
-                  <span>{practice}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Missing protections */}
-          {data.missing_protections && data.missing_protections.length > 0 && (
-            <div>
-              <div className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5">
-                Room for Improvement
+            )}
+            {data.missing_protections && data.missing_protections.length > 0 && (
+              <div className="flex-1 min-w-0">
+                {data.missing_protections.slice(0, 2).map((m, i) => (
+                  <div key={i} className="text-[10px] text-red-500 dark:text-red-400/70 flex gap-1 mb-0.5 leading-snug">
+                    <span className="shrink-0">&#10007;</span>
+                    <span className="line-clamp-1">{m}</span>
+                  </div>
+                ))}
               </div>
-              {data.missing_protections.slice(0, 3).map((item, i) => (
-                <div
-                  key={i}
-                  className="text-xs text-red-500 dark:text-red-400/70 flex gap-2 mb-1"
-                >
-                  <span className="shrink-0">&#10007;</span>
-                  <span>{item}</span>
-                </div>
-              ))}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </PanelCard>

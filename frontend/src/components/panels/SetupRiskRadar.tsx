@@ -34,35 +34,26 @@ export default function SetupRiskRadar({ data, isLoading }: Props) {
       isEmpty={!data}
     >
       {data && (
-        <div className="space-y-4">
-          {/* Overall risk badge */}
+        <div className="space-y-3">
+          {/* Overall risk + setup time */}
           <div className="flex items-center justify-between">
             <span
-              className={`px-3 py-1 text-sm font-medium rounded-full border ${
+              className={`px-2.5 py-0.5 text-xs font-medium rounded-full border ${
                 riskColors[data.overall_risk] || riskColors.medium
               }`}
             >
               {data.overall_risk?.toUpperCase()} RISK
             </span>
-            <div className="text-right">
-              <div className="text-xs text-gray-400 dark:text-gray-500">
-                Time to Set Up
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-300">
-                {data.estimated_setup_time}
-              </div>
-            </div>
+            <span className="text-xs text-gray-500 dark:text-gray-400">
+              Setup: <span className="text-gray-700 dark:text-gray-300">{data.estimated_setup_time}</span>
+            </span>
           </div>
 
-          {/* Complexity score */}
+          {/* Complexity bar */}
           <div>
             <div className="flex items-center justify-between text-xs mb-1">
-              <span className="text-gray-400 dark:text-gray-500">
-                Complexity
-              </span>
-              <span className="text-gray-500 dark:text-gray-400">
-                {data.complexity_score}/10
-              </span>
+              <span className="text-gray-400 dark:text-gray-500">Complexity</span>
+              <span className="text-gray-500 dark:text-gray-400">{data.complexity_score}/10</span>
             </div>
             <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
               <div
@@ -72,34 +63,21 @@ export default function SetupRiskRadar({ data, isLoading }: Props) {
             </div>
           </div>
 
-          {/* Risk items */}
-          <div className="space-y-2">
-            {data.risks?.slice(0, 5).map((risk, i) => (
-              <div
-                key={i}
-                className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2.5"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className={`w-2 h-2 rounded-full ${
-                      severityDots[risk.severity] || severityDots.medium
-                    }`}
-                  />
-                  <span className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {risk.title}
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-4">
-                  {risk.description}
-                </p>
-                <div className="flex gap-2 mt-1.5 ml-4">
-                  <span className="text-[10px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
-                    {risk.category}
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded">
-                    {risk.likelihood} likelihood
-                  </span>
-                </div>
+          {/* Risk items — compact: title + severity only */}
+          <div className="space-y-1">
+            {data.risks?.slice(0, 4).map((risk, i) => (
+              <div key={i} className="flex items-center gap-2 py-1">
+                <div
+                  className={`w-1.5 h-1.5 rounded-full shrink-0 ${
+                    severityDots[risk.severity] || severityDots.medium
+                  }`}
+                />
+                <span className="text-xs text-gray-700 dark:text-gray-300 flex-1 truncate">
+                  {risk.title}
+                </span>
+                <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-500 rounded shrink-0">
+                  {risk.category}
+                </span>
               </div>
             ))}
           </div>

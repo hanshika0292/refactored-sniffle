@@ -2,7 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { fetchRepoContent } from "@/lib/github";
 import { PASS_DEFINITIONS, getPassPrompt } from "@/lib/prompts";
 
-export const maxDuration = 300; // Vercel Pro: 5 min for 6 sequential Claude calls
+export const maxDuration = 300; // Vercel Pro: 5 min
 
 const MODEL = process.env.MODEL_NAME || "claude-sonnet-4-5-20250929";
 
@@ -51,18 +51,9 @@ export async function POST(request: Request) {
 
         const client = new Anthropic({ apiKey });
 
-        for (let i = 0; i < PASS_DEFINITIONS.length; i++) {
-          const def = PASS_DEFINITIONS[i];
+        // Fire ALL passes in parallel
+        const promises = PASS_DEFINITIONS.map(async (def, i) => {
           const passNumber = i + 1;
-
-          write(
-            sseLine("pass_start", {
-              pass_name: def.name,
-              pass_number: passNumber,
-              message: `Running ${def.title}...`,
-            })
-          );
-
           const startTime = Date.now();
 
           try {
@@ -115,7 +106,9 @@ export async function POST(request: Request) {
               );
             }
           }
-        }
+        });
+
+        await Promise.allSettled(promises);
 
         write(sseLine("done", { message: "Analysis complete" }));
       } catch (err) {

@@ -159,13 +159,13 @@ export const PASS_NAMES: Record<string, string> = {
 };
 
 export const PASS_ORDER = [
+  "safe_run_plan",
+  "claude_toolkit",
   "system_overview",
   "setup_risk_radar",
-  "failure_timeline",
   "security_risk",
-  "safe_run_plan",
+  "failure_timeline",
   "recovery_strategy",
-  "claude_toolkit",
 ];
 
 // Discovery types

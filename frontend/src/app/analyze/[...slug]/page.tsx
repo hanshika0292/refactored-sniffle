@@ -129,6 +129,7 @@ export default function AnalyzePage() {
               completedPasses={completedPasses}
               reasoning={state.reasoning}
               message={state.message}
+              status={state.status}
             />
           )}
 
@@ -154,10 +155,11 @@ export default function AnalyzePage() {
 
           {hasResults && <QuickVerdict results={state.results} />}
 
-          {hasResults && (
+          {(hasResults || isAnalyzing) && (
             <AnalysisDashboard
               results={state.results}
               currentPass={state.currentPass}
+              status={state.status}
             />
           )}
         </div>

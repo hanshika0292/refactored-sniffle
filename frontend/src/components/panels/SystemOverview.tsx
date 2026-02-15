@@ -18,70 +18,55 @@ export default function SystemOverview({ data, isLoading }: Props) {
       isEmpty={!data}
     >
       {data && (
-        <div className="space-y-4">
-          {/* Purpose */}
-          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+        <div className="space-y-3">
+          {/* Purpose — compact */}
+          <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed line-clamp-3">
             {data.purpose}
           </p>
 
           {/* Architecture badge */}
           <div className="flex items-center gap-2">
-            <span className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500">
-              How It's Built
-            </span>
             <span className="px-2 py-0.5 bg-cyan-100 dark:bg-cyan-900/40 text-cyan-600 dark:text-cyan-400 text-xs rounded-full border border-cyan-200 dark:border-cyan-800">
               {data.architecture_type}
             </span>
+            <span className="text-xs text-gray-400 dark:text-gray-500">
+              {data.components?.length} components
+            </span>
           </div>
 
-          {/* Components */}
-          <div>
-            <div className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">
-              Building Blocks
-            </div>
-            <div className="space-y-2">
-              {data.components?.slice(0, 5).map((comp, i) => (
-                <div
-                  key={i}
-                  className="bg-gray-50 dark:bg-gray-800/50 rounded-lg p-2.5"
-                >
-                  <div className="text-sm font-medium text-gray-800 dark:text-gray-200">
-                    {comp.name}
-                  </div>
-                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    {comp.description}
-                  </div>
-                  <div className="flex gap-1.5 mt-1.5 flex-wrap">
-                    {comp.tech?.map((t, j) => (
-                      <span
-                        key={j}
-                        className="px-1.5 py-0.5 bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-[10px] rounded"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Data flows */}
-          {data.data_flows && data.data_flows.length > 0 && (
-            <div>
-              <div className="text-xs uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-2">
-                How Data Moves
-              </div>
-              {data.data_flows.slice(0, 4).map((flow, i) => (
-                <div
-                  key={i}
-                  className="text-xs text-gray-500 dark:text-gray-400 flex gap-2 mb-1"
-                >
-                  <span className="text-cyan-600 dark:text-cyan-500 shrink-0">
-                    &#8594;
+          {/* Components — name + tech tags only */}
+          <div className="space-y-1.5">
+            {data.components?.slice(0, 4).map((comp, i) => (
+              <div key={i} className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                  {comp.name}
+                </span>
+                {comp.tech?.slice(0, 3).map((t, j) => (
+                  <span
+                    key={j}
+                    className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] rounded"
+                  >
+                    {t}
                   </span>
-                  <span>{flow}</span>
-                </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Key deps — compact inline */}
+          {data.key_dependencies && data.key_dependencies.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              <span className="text-[10px] uppercase tracking-wider text-gray-400 dark:text-gray-500 self-center mr-1">
+                Deps
+              </span>
+              {data.key_dependencies.slice(0, 5).map((dep, i) => (
+                <span
+                  key={i}
+                  className="px-1.5 py-0.5 bg-gray-50 dark:bg-gray-800/50 text-gray-500 dark:text-gray-400 text-[10px] rounded border border-gray-200 dark:border-gray-700"
+                  title={dep.purpose}
+                >
+                  {dep.name}
+                </span>
               ))}
             </div>
           )}
